@@ -34,10 +34,14 @@ se hace la solicitud al controlador para ejecutar la
 operación solicitada
 """
 
+connections = 'connections.csv'
+landing_points = 'landing_points.csv'
+countries = 'countries.csv'
+
 def printMenu():
     print("Bienvenido")
-    print("1- Cargar información en el catálogo")
-    print("2- ")
+    print("1- Inicializar el catalogo")
+    print("2- Cargar información en el catálogo")
 
 catalog = None
 
@@ -49,9 +53,10 @@ while True:
     inputs = input('Seleccione una opción para continuar\n')
     if int(inputs[0]) == 1:
         print("Cargando información de los archivos ....")
+        catalog = controller.initCatalog()
 
     elif int(inputs[0]) == 2:
-        pass
+        controller.loadData(catalog,connections,landing_points,countries)
 
     else:
         sys.exit(0)

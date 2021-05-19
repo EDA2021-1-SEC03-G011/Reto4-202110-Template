@@ -28,6 +28,7 @@
 import config as cf
 from DISClib.ADT import list as lt
 from DISClib.ADT import map as mp
+from DISClib.ADT.graph import gr
 from DISClib.DataStructures import mapentry as me
 from DISClib.Algorithms.Sorting import shellsort as sa
 assert cf
@@ -36,6 +37,25 @@ assert cf
 Se define la estructura de un catálogo de videos. El catálogo tendrá dos listas, una para los videos, otra para las categorias de
 los mismos.
 """
+def newCatalog():
+
+    catalog = {
+               'connections':None,
+               'landing_points':None,
+               'countries':None
+               }
+
+    catalog['connections'] = gr.newGraph(datastructure='ADJ_LIST',
+                                         directed = True,
+                                         size= 15000)
+    
+    catalog['landing_points'] = mp.newMap(numelements=15000,
+                                          maptype='PROBING')
+
+    catalog['countries'] = mp.newMap(numelements=250,
+                                          maptype='PROBING')
+
+    return catalog
 
 # Construccion de modelos
 
