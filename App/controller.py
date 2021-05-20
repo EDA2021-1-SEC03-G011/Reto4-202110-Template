@@ -37,23 +37,30 @@ def initCatalog():
 def loadData(catalog,connections,landing_points,countries):
 
     landing_points = cf.data_dir + landing_points
-    input_file_landing = csv.DictReader(open(landing_points, encoding='utf-8'))
+    input_file_landing = csv.DictReader(open(landing_points, encoding='utf-8-sig'))
 
     for landing_point in input_file_landing:
         model.addLandingPoint(catalog, landing_point)
 
     connections = cf.data_dir + connections
-    input_file_cable = csv.DictReader(open(connections, encoding='utf-8'))
+    input_file_cable = csv.DictReader(open(connections, encoding='utf-8-sig'))
     lastcable = None
 
     for cable in input_file_cable:
         if lastcable is not None:
-            cable['origin'] = cable['\ufefforigin']
             samecable = cable['origin'] == lastcable['destination']
             if not samecable:
                 model.addCable(catalog, cable)
         lastcable = cable
     model.addLandingConnection(catalog)
+
+    countries = cf.data_dir + countries
+    input_file_countries = csv.DictReader(open(countries, encoding='utf-8-sig'))
+
+    for country in input_file_countries:
+        model.addCountryPoint(catalog, country)
+
+    
 
 
 

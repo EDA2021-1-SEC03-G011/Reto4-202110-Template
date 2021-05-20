@@ -59,6 +59,9 @@ def newCatalog():
 
     catalog['countries'] = mp.newMap(numelements=250,
                                           maptype='PROBING')
+    
+    catalog['landing_countries'] = mp.newMap(numelements=15000,
+                                          maptype='PROBING')
 
     return catalog
 
@@ -82,6 +85,11 @@ def addCable(catalog, cable):
     addRoute(catalog,cable['origin'],cable["cable_name"])
     addRoute(catalog,cable['destination'],cable["cable_name"])
 
+def addCountryPoint(catalog, country):
+    if country['CountryName'] != "":
+        countryname = country['CountryName']+'-'+country['CapitalName']
+        addJoint(catalog, countryname)
+
 
 # Funciones para creacion de datos
 
@@ -89,6 +97,19 @@ def addCable(catalog, cable):
 
 def addLandingPoint(catalog, landing_point):
     mp.put(catalog['landing_points'],landing_point['landing_point_id'],landing_point)
+
+    country = landing_point['name'].split(',')
+    country = country[-1].lower()
+    exists = mp.get(catalog['landing_countries'],country)
+    if exists is None: 
+        points_list=lt.newList(datastructure="ARRAY_LIST")
+        lt.addLast(points_list,landing_point['landing_point_id'])
+    else:
+        points_list=me.getValue(exists)
+        if not lt.isPresent(points_list,landing_point['landing_point_id']):
+            lt.addLast(points_list,landing_point['landing_point_id'])
+    mp.put(catalog["landing_countries"],country,points_list)
+
 
 def formatVertex(origin, name):
     format = origin + '-' + name
@@ -143,10 +164,14 @@ def addLandingConnection(catalog):
                 origin=point+"-"+cable
                 destination=point+"-"+previous_cable
                 addConnection(catalog,origin,destination,0.1)
-                print("hola")
+                
             previous_cable=cable
-
-
+        #Cerrar el ciclo al unir el primero con el ultimo
+        cable = lt.firstElement(cable_names)
+        origin=point+"-"+cable
+        destination=point+"-"+previous_cable
+        addConnection(catalog,origin,destination,0.1)
+        
 
 
 # Funciones de consulta
