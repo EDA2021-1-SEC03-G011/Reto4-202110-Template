@@ -57,6 +57,7 @@ while True:
 
     elif int(inputs[0]) == 2:
         controller.loadData(catalog,connections,landing_points,countries)
+        print(controller.graphSize(catalog['connections']))
 
     else:
         sys.exit(0)

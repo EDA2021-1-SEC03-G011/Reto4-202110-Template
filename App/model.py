@@ -88,8 +88,8 @@ def haversine(lat_1,lon_1,lat_2,lon_2):
     delta_lon = math.radians(lon_2) - math.radians(lon_1)
     
 
-    a = (math.sin(delta_lat/2))**2 + math.cos(lat_1)*math.cos(lat_2)*(math.sin(delta_lon/2))**2
-    c = 2*math.asin(a**(1/2))
+    a = (math.sin(delta_lat/2))**2 + math.cos(lat_1)*math.cos(lat_2)*((math.sin(delta_lon/2))**2)
+    c = 2*math.asin(abs(a)**(1/2))
     d = radius * c
 
     return d
@@ -112,6 +112,9 @@ def addConnection(catalog, origin, destination, distance):
 
 
 # Funciones de consulta
+
+def graphSize(graph):
+    return gr.numVertices(graph)
 
 # Funciones utilizadas para comparar elementos dentro de una lista
 
