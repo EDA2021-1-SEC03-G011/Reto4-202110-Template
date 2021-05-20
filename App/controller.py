@@ -35,6 +35,7 @@ def initCatalog():
 
 # Funciones para la carga de datos
 def loadData(catalog,connections,landing_points,countries):
+
     landing_points = cf.data_dir + landing_points
     input_file_landing = csv.DictReader(open(landing_points, encoding='utf-8'))
 
@@ -52,7 +53,7 @@ def loadData(catalog,connections,landing_points,countries):
             if not samecable:
                 model.addCable(catalog, cable)
         lastcable = cable
-    
+    model.addLandingConnection(catalog)
 
 
 
