@@ -82,14 +82,16 @@ def addCable(catalog, cable):
 
 # Funciones para creacion de datos
 
-def haversine(lat_1,lon_1,lat_2,lon_2):
-    radius = 6356 
-    delta_lat = math.radians(lat_2) - math.radians(lat_1)
-    delta_lon = math.radians(lon_2) - math.radians(lon_1)
-    
+def haversine(lat1,lon1,lat2,lon2):
 
-    a = (math.sin(delta_lat/2))**2 + math.cos(lat_1)*math.cos(lat_2)*((math.sin(delta_lon/2))**2)
-    c = 2*math.asin(abs(a)**(1/2))
+
+    radius = 6371 # km
+
+    dlat = math.radians(lat2-lat1)
+    dlon = math.radians(lon2-lon1)
+    a = math.sin(dlat/2) * math.sin(dlat/2) + math.cos(math.radians(lat1)) \
+        * math.cos(math.radians(lat2)) * math.sin(dlon/2) * math.sin(dlon/2)
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
     d = radius * c
 
     return d
