@@ -48,7 +48,7 @@ def loadData(catalog,connections,landing_points,countries):
 
     for cable in input_file_cable:
         if lastcable is not None:
-            samecable = cable['origin'] == lastcable['destination']
+            samecable = cable['origin'] == lastcable['destination'] and cable["destination"]==lastcable["origin"]
             if not samecable:
                 model.addCable(catalog, cable)
         lastcable = cable
@@ -58,7 +58,10 @@ def loadData(catalog,connections,landing_points,countries):
     input_file_countries = csv.DictReader(open(countries, encoding='utf-8-sig'))
 
     for country in input_file_countries:
-        model.addCountryPoint(catalog, country)
+        if country["CountryName"]!="":
+            model.addCountryPoint(catalog, country)
+            model.addCountry(catalog,country)
+            model.addCountryConnections(catalog,country)
 
     
 
@@ -70,3 +73,14 @@ def loadData(catalog,connections,landing_points,countries):
 
 def graphSize(graph):
     return model.graphSize(graph)
+
+def connectionsSize(graph):
+    return model.connectionsSize(graph)
+def countrySize(catalog):
+    return model.countrySize(catalog)
+
+def lastCountry(catalog):
+    return model.lastCountry(catalog)
+
+def firstLandingPoint(catalog):
+    return model.firstLandingPoint(catalog)

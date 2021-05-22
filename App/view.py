@@ -57,8 +57,22 @@ while True:
 
     elif int(inputs[0]) == 2:
         controller.loadData(catalog,connections,landing_points,countries)
-        print(controller.graphSize(catalog['connections']))
-
+        lastCountry=controller.lastCountry(catalog)
+        firstLanding=controller.firstLandingPoint(catalog)
+        print("Cantidad total de vertices:" , controller.graphSize(catalog['connections']))
+        print("Cantidad total de arcos: ",controller.connectionsSize(catalog["connections"]))
+        print("Cantidad de paises: ", controller.countrySize(catalog))
+        print("\nLanding Point: ", firstLanding["landing_point_id"])
+        print("Ubicación: ", firstLanding["name"])
+        print("Latitud: ",firstLanding["latitude"])
+        print("Longitud: ",firstLanding["longitude"])
+        print("\nPais: ",lastCountry["CountryName"])
+        print("Población: ",lastCountry["Population"])
+        print("Usuarios de internet : ",lastCountry["Internet users"])
+    elif int(inputs[0])==3:
+        landing1=input("Escriba el nombre de la primera ciudad ")
+        landing2=input("Escriba el nombre de la segunda ciudad ")
+        
     else:
         sys.exit(0)
 sys.exit(0)
