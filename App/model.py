@@ -25,7 +25,6 @@
  """
 
 
-from DISClib.DataStructures.arraylist import iterator
 from os import name
 import config as cf
 import math
@@ -34,7 +33,7 @@ from DISClib.ADT import map as mp
 from DISClib.ADT.graph import gr
 from DISClib.DataStructures import mapentry as me
 from DISClib.Algorithms.Sorting import shellsort as sa
-from DISClib.DataStructures import linkedlistiterator as lti
+from DISClib.DataStructures import linkedlistiterator as lli
 assert cf
 
 """
@@ -45,65 +44,50 @@ los mismos.
 def newCatalog():
 
     catalog = {
-               'connections':None,
-               'landing_points':None,
+               'graph':None,
+               'landing_points_map':None,
                'countries':None
                }
 
-    catalog['connections'] = gr.newGraph(datastructure='ADJ_LIST',
+    catalog['graph'] = gr.newGraph(datastructure='ADJ_LIST',
                                          directed = False,
                                          size= 15000,
                                          comparefunction=compareJointId)
-    
-    catalog['local_landings']=mp.newMap(numelements=1500,maptype='PROBING')
 
-    catalog['landing_points'] = mp.newMap(numelements=15000,
+    catalog['landing_points_map'] = mp.newMap(numelements=15000,
                                           maptype='PROBING')
+    
+    catalog['same_landing_point_map']=mp.newMap(numelements=1500,maptype='PROBING')
+    
 
-    catalog["landing_points_name"]=lt.newList("ARRAY_LIST")
-
-    catalog['countries'] = mp.newMap(numelements=250,maptype="PROBING")
+    catalog['countries'] = mp.newMap(numelements=250,
+                                          maptype='PROBING')
+    
+    catalog['landing_by_country_map'] = mp.newMap(numelements=15000,
+                                          maptype='PROBING')
 
     catalog["countries_name"]=lt.newList("ARRAY_LIST")
 
+    catalog["landing_points_name"]=lt.newList("ARRAY_LIST")
     
-    catalog['landing_countries'] = mp.newMap(numelements=15000,
-                                          maptype='PROBING')
-
     return catalog
 
 
 
 # Funciones para agregar informacion al catalogo
 
-def addCable(catalog, cable):
-    origin = cable['origin']
-    destination = cable['destination']
-    ori_couple = mp.get(catalog['landing_points'],origin)
-    ori_coor = me.getValue(ori_couple)
-    des_couple = mp.get(catalog['landing_points'],destination)
-    des_coor = me.getValue(des_couple)
-    distance = haversine (float(ori_coor['latitude']),float(ori_coor['longitude']),float(des_coor['latitude']),float(des_coor['longitude']))
-    name_ori = formatVertex(cable['origin'],cable['cable_name'])
-    name_des = formatVertex(cable['destination'],cable['cable_name'])
-    addJoint(catalog,name_ori)
-    addJoint(catalog,name_des)
-    addConnection(catalog, name_ori, name_des, distance)
-    addRoute(catalog,cable['origin'],cable["cable_name"])
-    addRoute(catalog,cable['destination'],cable["cable_name"])
-
-# Funciones para creacion de datos
-
-
-#Crea una tabla de hash donde las llaves son el nombre el pais y el valor son los landing points de dicho pais
 def addLandingPoint(catalog, landing_point):
+    """
+    Agrega a un mapa por llaves landing_point_id y valor la info de ese
+    Agrega a un mapa por llaves country y valores listas de landing de este country
+    """
+    mp.put(catalog['landing_points_map'],landing_point['landing_point_id'],landing_point)
     lt.addLast(catalog["landing_points_name"],landing_point["landing_point_id"])
 
-    mp.put(catalog['landing_points'],landing_point['landing_point_id'],landing_point)
-
     country = landing_point['name'].split(',')
-    country = country[-1].lower()
-    exists = mp.get(catalog['landing_countries'],country)
+    country = country[-1].lower().strip()
+    exists = mp.get(catalog['landing_by_country_map'],country)
+
     if exists is None: 
         points_list=lt.newList(datastructure="ARRAY_LIST")
         lt.addLast(points_list,landing_point['landing_point_id'])
@@ -111,52 +95,56 @@ def addLandingPoint(catalog, landing_point):
         points_list=me.getValue(exists)
         if not lt.isPresent(points_list,landing_point['landing_point_id']):
             lt.addLast(points_list,landing_point['landing_point_id'])
-    mp.put(catalog["landing_countries"],country,points_list)
 
-def addRoute(catalog,landing_point,cable_name):
+    mp.put(catalog["landing_by_country_map"],country,points_list)
 
-    p=mp.get(catalog["local_landings"],landing_point)
-    if p is None: 
-        cables_list=lt.newList(datastructure="ARRAY_LIST")
-        lt.addLast(cables_list,cable_name)
-    else:
-        cables_list=me.getValue(p)
-        if not lt.isPresent(cables_list,cable_name):
-            lt.addLast(cables_list,cable_name)
-    mp.put(catalog["local_landings"],landing_point,cables_list)
+def addCable(catalog, cable):
+
+    origin = cable['origin']
+    ori_couple = mp.get(catalog['landing_points_map'],origin)
+    ori_coor = me.getValue(ori_couple)
+
+    destination = cable['destination']
+    des_couple = mp.get(catalog['landing_points_map'],destination)
+    des_coor = me.getValue(des_couple)
+
+    distance = haversine (float(ori_coor['latitude']),float(ori_coor['longitude']),float(des_coor['latitude']),float(des_coor['longitude']))
+
+    name_ori = formatVertex(cable['origin'],cable['cable_name'])
+    name_des = formatVertex(cable['destination'],cable['cable_name'])
+
+    addJoint(catalog,name_ori)
+    addJoint(catalog,name_des)
+
+    addConnection(catalog, name_ori, name_des, distance)
+    
+    addLandingFamily(catalog,cable['origin'],name_ori) 
+    addLandingFamily(catalog,cable['destination'],name_des) 
 
 def addLandingConnection(catalog):
-    landing_points=mp.keySet(catalog["local_landings"])
+    landing_points_list=mp.keySet(catalog["same_landing_point_map"])
 
-    for point in lt.iterator(landing_points):
-        cable_couple=mp.get(catalog["local_landings"],point)
+    for landing_point in lt.iterator(landing_points_list):
+        cable_couple=mp.get(catalog["same_landing_point_map"],landing_point)
         cable_names=me.getValue(cable_couple)
         previous_cable=None
         for cable in lt.iterator(cable_names):
             if previous_cable!=None:
-                origin=point+"-"+cable
-                destination=point+"-"+previous_cable
+                origin= cable
+                destination= previous_cable
                 addConnection(catalog,origin,destination,0.1)
+                
             previous_cable=cable
         #Cerrar el ciclo al unir el primero con el ultimo
         cable = lt.firstElement(cable_names)
-        origin=point+"-"+cable
-        destination=point+"-"+previous_cable
+        origin=cable
+        destination=previous_cable
         addConnection(catalog,origin,destination,0.1)
 
-#Esta función es la que va a conectar las capitales con cada una las ciudades delpais
-def addCountryConnections(catalog,country):
-    country_couple=mp.get(catalog["landing_countries"],country["CountryName"])
-    country_landings=me.getValue(country_couple)
-
-    capital_name=country["CapitalName"]
-    iterador=lti.newIterator(country_landings)
-
-    while lti.hasNext(iterador):
-        landing_point=lti.next(iterador)
-
-    
-
+def addCountryPoint(catalog, country):
+    if country['CountryName'] != "":
+        countryname = country['CountryName']+'-'+country['CapitalName']
+        addJoint(catalog, countryname)
 
 def addCountryPoint(catalog, country):
     if country['CountryName'] != "":
@@ -165,33 +153,80 @@ def addCountryPoint(catalog, country):
 
 def addCountry(catalog,country):
     mp.put(catalog["countries"],country["CountryName"],country)
-    lt.addLast(catalog["countries_name"],country["CountryName"])
+    lt.addLast(catalog["countries_name"],country)
+
+def addCountryConnections(catalog,country):
+    country_lat = country["CapitalLatitude"]
+    country_lon = country["CapitalLongitude"]
+
+    countries_couple = mp.get(catalog['landing_by_country_map'],country['CountryName'].lower())
+
+    if countries_couple is not None:
+        countries_list = me.getValue(countries_couple)
+
+        for landingpoint in lt.iterator(countries_list):
+            info_couple = mp.get(catalog['landing_points_map'],landingpoint)
+            info = me.getValue(info_couple)
+
+            landing_lat = info['latitude']
+            landing_lon = info['longitude']
+
+            distance = haversine(float(country_lat),float(country_lon),float(landing_lat),float(landing_lon))
+
+            family_couple = mp.get(catalog['same_landing_point_map'],landingpoint)
+            family = me.getValue(family_couple)
+
+            for cable in lt.iterator(family):
+                addConnection(catalog, cable, country['CountryName']+'-'+country['CapitalName'],distance)
+    else: 
+        minimum = 1000000 
+        landind_ward = None
+        landing_points = mp.keySet(catalog['landing_points_map'])
+        for landing_point in lt.iterator(landing_points):
+            info_couple = mp.get(catalog['landing_points_map'],landing_point)
+            info = me.getValue(info_couple)
+
+            landing_lat = info['latitude']
+            landing_lon = info['longitude']
+
+            distance = haversine(float(country_lat),float(country_lon),float(landing_lat),float(landing_lon))
+
+            if distance < minimum:
+                minimum = distance
+                landind_ward = landing_point
+        
+        family_couple = mp.get(catalog['same_landing_point_map'],landind_ward)
+        family = me.getValue(family_couple)
+        for cable in lt.iterator(family):
+            addConnection(catalog, cable, country['CountryName']+'-'+country['CapitalName'],minimum)
+
+
+# Funciones para creacion de datos
 
 def formatVertex(origin, name):
     format = origin + '-' + name
     return format
 
 def addJoint(catalog, vertex):
-    if not gr.containsVertex(catalog['connections'],vertex):
-        gr.insertVertex(catalog['connections'],vertex)
+    if not gr.containsVertex(catalog['graph'],vertex):
+        gr.insertVertex(catalog['graph'],vertex)
 
 def addConnection(catalog, origin, destination, distance):
-    edge = gr.getEdge(catalog['connections'],origin,destination)
+    edge = gr.getEdge(catalog['graph'],origin,destination)
     if edge is None:
-        gr.addEdge(catalog['connections'],origin, destination,distance)
-def haversine(lat1,lon1,lat2,lon2):
+        gr.addEdge(catalog['graph'],origin, destination,distance)
 
+def addLandingFamily(catalog,landing_point,format_name):
 
-    radius = 6371 # km
-
-    dlat = math.radians(lat2-lat1)
-    dlon = math.radians(lon2-lon1)
-    a = math.sin(dlat/2) * math.sin(dlat/2) + math.cos(math.radians(lat1)) \
-        * math.cos(math.radians(lat2)) * math.sin(dlon/2) * math.sin(dlon/2)
-    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
-    d = radius * c
-
-    return d
+    same_landing=mp.get(catalog["same_landing_point_map"],landing_point)
+    if same_landing is None: 
+        cables_list=lt.newList(datastructure="ARRAY_LIST")
+        lt.addLast(cables_list,format_name)
+    else:
+        cables_list=me.getValue(same_landing)
+        if not lt.isPresent(cables_list,format_name):
+            lt.addLast(cables_list,format_name)
+    mp.put(catalog["same_landing_point_map"],landing_point,cables_list)
 
 
 # Funciones de consulta
@@ -202,31 +237,23 @@ def graphSize(graph):
 def connectionsSize(graph):
     return gr.numEdges(graph)
 
-# Funciones utilizadas para comparar elementos dentro de una lista
-
 def countrySize(catalog):
-
     return lt.size(catalog["countries_name"])
 
 def lastCountry(catalog):
     lastCountry=lt.lastElement(catalog["countries_name"])
-
-    couple=mp.get(catalog["countries"],lastCountry)
-    
-    country_info=me.getValue(couple)
-
-    return country_info
-
+    return lastCountry
 
 def firstLandingPoint(catalog):
     firstLanding=lt.firstElement(catalog["landing_points_name"])
     
-    couple=mp.get(catalog["landing_points"],firstLanding)
+    couple=mp.get(catalog["landing_points_map"],firstLanding)
 
     landing_info=me.getValue(couple)
 
     return landing_info
 
+# Funciones utilizadas para comparar elementos dentro de un grafo
 
 def compareJointId(stop, keyvaluestop):
     stopcode = keyvaluestop['key']
@@ -238,3 +265,17 @@ def compareJointId(stop, keyvaluestop):
         return -1
 
 # Funciones de ordenamiento
+
+# Funciones para hacer calculos 
+
+def haversine(lat1,lon1,lat2,lon2):
+    radius = 6371 # km
+    dlat = math.radians(lat2-lat1)
+    dlon = math.radians(lon2-lon1)
+    a = math.sin(dlat/2) * math.sin(dlat/2) + math.cos(math.radians(lat1)) \
+        * math.cos(math.radians(lat2)) * math.sin(dlon/2) * math.sin(dlon/2)
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
+    d = radius * c
+
+    return d
+

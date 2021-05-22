@@ -30,10 +30,12 @@ El controlador se encarga de mediar entre la vista y el modelo.
 """
 
 # Inicialización del Catálogo
+
 def initCatalog():
     return model.newCatalog()
 
 # Funciones para la carga de datos
+
 def loadData(catalog,connections,landing_points,countries):
 
     landing_points = cf.data_dir + landing_points
@@ -41,6 +43,7 @@ def loadData(catalog,connections,landing_points,countries):
 
     for landing_point in input_file_landing:
         model.addLandingPoint(catalog, landing_point)
+      
 
     connections = cf.data_dir + connections
     input_file_cable = csv.DictReader(open(connections, encoding='utf-8-sig'))
@@ -48,7 +51,7 @@ def loadData(catalog,connections,landing_points,countries):
 
     for cable in input_file_cable:
         if lastcable is not None:
-            samecable = cable['origin'] == lastcable['destination'] and cable["destination"]==lastcable["origin"]
+            samecable = cable['origin'] == lastcable['destination'] and cable["destination"]==lastcable["origin"] and cable["cable_id"]==lastcable["cable_id"] 
             if not samecable:
                 model.addCable(catalog, cable)
         lastcable = cable
@@ -62,6 +65,7 @@ def loadData(catalog,connections,landing_points,countries):
             model.addCountryPoint(catalog, country)
             model.addCountry(catalog,country)
             model.addCountryConnections(catalog,country)
+           
 
     
 
