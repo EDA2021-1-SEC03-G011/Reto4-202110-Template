@@ -49,12 +49,13 @@ def newCatalog():
                'landing_points_map':None,
                'countries':None
                }
-
+    """Grafo cuyos vertices son la cadena <landing_point><cable_name> y los arcos son las distancias entre ellos(km)"""
     catalog['graph'] = gr.newGraph(datastructure='ADJ_LIST',
                                          directed = False,
                                          size= 15000,
                                          comparefunction=compareJointId)
-    
+
+    """Grafo cuyos vertices son los landing point"""
     catalog['marine_graph'] = gr.newGraph(datastructure='ADJ_LIST',
                                          directed = False,
                                          size= 15000,
@@ -106,16 +107,27 @@ def addLandingPoint(catalog, landing_point):
     mp.put(catalog["landing_by_country_map"],country,points_list)
 
 def addMarinePoint(catalog, landing_point):
+    """Agrega un vertice al grafo marine_graph cuyo nombre es el id del landing point"""
     name = landing_point['landing_point_id']
     addMarine(catalog,name)
 
 def addMarineCable(catalog,cable):
+    """Añade un arco entre 2 vertices cuya distancia es 1
+    """
     origin = cable['origin']
     destination= cable['destination']
     gr.addEdge(catalog['marine_graph'],origin, destination,1)
 
 def addCable(catalog, cable):
+    """
+    Se crean 2 vertices con formato <landing_point><cable_name>
 
+    Se añade el arco entre estos 2 vertices cuyo valor es la distancia entre ellos
+    
+    Se añade a una tabla de hash una lista que contiene los cables de un mismo landing point por cada landing point diferente 
+
+    diccionario = {  landing_point1: [<landing_point1><cable_name>, <landing_point1><cable_name2>]}
+    """
     origin = cable['origin']
     ori_couple = mp.get(catalog['landing_points_map'],origin)
     ori_coor = me.getValue(ori_couple)
@@ -138,6 +150,11 @@ def addCable(catalog, cable):
     addLandingFamily(catalog,cable['destination'],name_des) 
 
 def addLandingConnection(catalog):
+    """
+    Se añaden arcos entre los vertices que tengan mismo landing point pero diferente cable_name
+
+    La distancia entre los arcos es de 100 metros
+    """
     landing_points_list=mp.keySet(catalog["same_landing_point_map"])
 
     for landing_point in lt.iterator(landing_points_list):
@@ -158,20 +175,25 @@ def addLandingConnection(catalog):
         addConnection(catalog,origin,destination,0.1)
 
 def addCountryPoint(catalog, country):
-    if country['CountryName'] != "":
-        countryname = country['CountryName']+'-'+country['CapitalName']
-        addJoint(catalog, countryname)
-
-def addCountryPoint(catalog, country):
+    """
+    Se crea un vertice con formato <CountryName><CapitalName>
+    """
     if country['CountryName'] != "":
         countryname = country['CountryName']+'-'+country['CapitalName']
         addJoint(catalog, countryname)
 
 def addCountry(catalog,country):
+    """
+    Se añade a una tabla de hash la llave: CountryName, y su valor: Country(caracteristicas del pais cargado)
+    """
     mp.put(catalog["countries"],country["CountryName"],country)
     lt.addLast(catalog["countries_name"],country)
 
 def addCountryConnections(catalog,country):
+    """
+    Por cada pais se añade un arco entre la capital de este y todos los vertices que pertenecen a dicho pais. El peso del arco es la
+    distancia entre el landing point y la capital
+    """
     country_lat = country["CapitalLatitude"]
     country_lon = country["CapitalLongitude"]
 
