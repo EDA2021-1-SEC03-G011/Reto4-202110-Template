@@ -26,6 +26,8 @@ import controller
 from DISClib.ADT import list as lt
 assert cf
 
+sys.setrecursionlimit(1000000000)
+
 
 """
 La vista se encarga de la interacción con el usuario
@@ -42,6 +44,7 @@ def printMenu():
     print("Bienvenido")
     print("1- Inicializar el catalogo")
     print("2- Cargar información en el catálogo")
+    print("3- Requerimiento 1")
 
 catalog = None
 
@@ -59,8 +62,9 @@ while True:
         controller.loadData(catalog,connections,landing_points,countries)
         lastCountry=controller.lastCountry(catalog)
         firstLanding=controller.firstLandingPoint(catalog)
-        print("Cantidad total de vertices:" , controller.graphSize(catalog['graph']))
+        print("Cantidad total de vertices: " , controller.graphSize(catalog['graph']))
         print("Cantidad total de arcos: ",controller.connectionsSize(catalog['graph']))
+        print("Cantidad total de Landing Points : " , controller.mapSize(catalog['landing_points_map']))
         print("Cantidad de paises: ", controller.countrySize(catalog))
         print("\nLanding Point: ", firstLanding["landing_point_id"])
         print("Ubicación: ", firstLanding["name"])
@@ -69,9 +73,12 @@ while True:
         print("\nPais: ",lastCountry["CountryName"])
         print("Población: ",lastCountry["Population"])
         print("Usuarios de internet : ",lastCountry["Internet users"])
+
     elif int(inputs[0])==3:
         landing1=input("Escriba el nombre de la primera ciudad ")
         landing2=input("Escriba el nombre de la segunda ciudad ")
+        print(controller.SCC(catalog['graph']))
+        #print(controller.areConnected(landing1,landing2,catalog['graph']))
         
     else:
         sys.exit(0)

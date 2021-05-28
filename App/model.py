@@ -34,6 +34,7 @@ from DISClib.ADT.graph import gr
 from DISClib.DataStructures import mapentry as me
 from DISClib.Algorithms.Sorting import shellsort as sa
 from DISClib.DataStructures import linkedlistiterator as lli
+from DISClib.Algorithms.Graphs import scc as scc
 assert cf
 
 """
@@ -53,6 +54,12 @@ def newCatalog():
                                          directed = False,
                                          size= 15000,
                                          comparefunction=compareJointId)
+    
+    catalog['marine_graph'] = gr.newGraph(datastructure='ADJ_LIST',
+                                         directed = False,
+                                         size= 15000,
+                                         comparefunction=compareJointId)
+
 
     catalog['landing_points_map'] = mp.newMap(numelements=15000,
                                           maptype='PROBING')
@@ -97,6 +104,15 @@ def addLandingPoint(catalog, landing_point):
             lt.addLast(points_list,landing_point['landing_point_id'])
 
     mp.put(catalog["landing_by_country_map"],country,points_list)
+
+def addMarinePoint(catalog, landing_point):
+    name = landing_point['landing_point_id']
+    addMarine(catalog,name)
+
+def addMarineCable(catalog,cable):
+    origin = cable['origin']
+    destination= cable['destination']
+    gr.addEdge(catalog['marine_graph'],origin, destination,1)
 
 def addCable(catalog, cable):
 
@@ -211,6 +227,10 @@ def addJoint(catalog, vertex):
     if not gr.containsVertex(catalog['graph'],vertex):
         gr.insertVertex(catalog['graph'],vertex)
 
+def addMarine(catalog, vertex):
+    if not gr.containsVertex(catalog['marine_graph'],vertex):
+        gr.insertVertex(catalog['marine_graph'],vertex)
+
 def addConnection(catalog, origin, destination, distance):
     edge = gr.getEdge(catalog['graph'],origin,destination)
     if edge is None:
@@ -253,6 +273,9 @@ def firstLandingPoint(catalog):
 
     return landing_info
 
+def mapSize(map):
+    return mp.size(map)
+
 # Funciones utilizadas para comparar elementos dentro de un grafo
 
 def compareJointId(stop, keyvaluestop):
@@ -264,8 +287,15 @@ def compareJointId(stop, keyvaluestop):
     else:
         return -1
 
-# Funciones de ordenamiento
+# Funciones de cracks
 
+def SCC(graph):
+    kosa = scc.KosarajuSCC(graph)
+    return scc.connectedComponents(kosa)
+
+def areConnected(landing1,landing2,graph):
+    kosa = scc.KosarajuSCC(graph)
+    return scc.stronglyConnected(kosa,landing1,landing2)
 # Funciones para hacer calculos 
 
 def haversine(lat1,lon1,lat2,lon2):

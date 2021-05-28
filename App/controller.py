@@ -43,6 +43,7 @@ def loadData(catalog,connections,landing_points,countries):
 
     for landing_point in input_file_landing:
         model.addLandingPoint(catalog, landing_point)
+        model.addMarinePoint(catalog, landing_point)
       
 
     connections = cf.data_dir + connections
@@ -54,7 +55,10 @@ def loadData(catalog,connections,landing_points,countries):
             samecable = cable['origin'] == lastcable['destination'] and cable["destination"]==lastcable["origin"] and cable["cable_id"]==lastcable["cable_id"] 
             if not samecable:
                 model.addCable(catalog, cable)
+                
         lastcable = cable
+        model.addMarineCable(catalog,cable)
+
     model.addLandingConnection(catalog)
 
     countries = cf.data_dir + countries
@@ -67,11 +71,13 @@ def loadData(catalog,connections,landing_points,countries):
             model.addCountryConnections(catalog,country)
            
 
-    
+# Funciones de cracks
 
+def SCC(graph):
+    return model.SCC(graph)
 
-
-# Funciones de ordenamiento
+def areConnected(landing1,landing2,graph):
+    return model.areConnected(landing1,landing2,graph)
 
 # Funciones de consulta sobre el catálogo
 
@@ -88,3 +94,6 @@ def lastCountry(catalog):
 
 def firstLandingPoint(catalog):
     return model.firstLandingPoint(catalog)
+
+def mapSize(map):
+    return model.mapSize(map)
