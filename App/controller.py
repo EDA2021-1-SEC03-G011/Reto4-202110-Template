@@ -76,6 +76,12 @@ def SCC(graph):
 def areConnected(landing1,landing2,graph):
     return model.areConnected(landing1,landing2,graph)
 
+def dijsktra(graph,source):
+    return model.dijsktra(graph,source)
+
+def path(dijsktra,countryB):
+    return model.path(dijsktra,countryB)
+
 # Funciones de consulta sobre el catálogo
 
 def graphSize(graph):
@@ -100,3 +106,6 @@ def findLandingPoint(catalog,landingpoint):
 
 def findInterconnectionCables(catalog):
     return model.findInterconnectionCables(catalog)
+
+def getCapital(country,catalog):
+    return model.getCapital(country,catalog)

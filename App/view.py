@@ -25,6 +25,8 @@ import sys
 import controller
 from DISClib.ADT import list as lt
 from DISClib.ADT import map as mp
+from DISClib.ADT.graph import gr
+from DISClib.Algorithms.Graphs import dijsktra as dji
 assert cf
 
 sys.setrecursionlimit(1000000000)
@@ -42,7 +44,7 @@ landing_points = 'landing_points.csv'
 countries = 'countries.csv'
 
 def printMenu():
-    print("Bienvenido")
+    print("\nBienvenido")
     print("1- Inicializar el catalogo")
     print("2- Cargar información en el catálogo")
     print("3- Requerimiento 1")
@@ -83,7 +85,6 @@ while True:
         id_landing1=str(controller.findLandingPoint(catalog,landing1))
         id_landing2=controller.findLandingPoint(catalog,landing2)
         
-        print(id_landing1,id_landing2)
         if id_landing1!=-1 and id_landing2!=-1:
 
             
@@ -100,7 +101,23 @@ while True:
         
     elif int(inputs[0])==4:
         controller.findInterconnectionCables(catalog)
-        
+
+    elif int(inputs[0])==5:
+        countryA = (input("Escriba el nombre el primer pais: ")).title()
+        countryB = (input("Escriba el nombre el segundo pais: ")).title()
+
+        countryA = controller.getCapital(countryA,catalog)
+        countryB = controller.getCapital(countryB,catalog)
+
+        if (countryA and countryB) != None:
+            dijsktra = controller.dijsktra(catalog['graph'],countryA)
+            path = controller.path(dijsktra,countryB)
+            for route in lt.iterator(path):
+                print(route['vertexA'],"->",route['vertexB']," : ",route['weight'])
+            print("Distancia total: ",dji.distTo(dijsktra,countryB))
+
+        else:
+            print("Bueno panita, pls, escribe bien, o a lo mejor ese pais no existe")
     else:
         sys.exit(0)
 sys.exit(0)

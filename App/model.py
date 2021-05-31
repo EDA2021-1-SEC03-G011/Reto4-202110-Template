@@ -36,6 +36,7 @@ from DISClib.Algorithms.Sorting import shellsort as sa
 from DISClib.DataStructures import linkedlistiterator as lli
 from DISClib.Algorithms.Graphs import scc as scc
 from DISClib.Algorithms.Graphs import dfs as dfs
+from DISClib.Algorithms.Graphs import dijsktra as dji
 assert cf
 
 """
@@ -360,6 +361,14 @@ def findLandingPoint(catalog,landingPoint):
     else:
         return -1
 
+def getCapital(country,catalog):
+    capital_couple = mp.get(catalog['countries'],country)
+    capital = None
+    if capital_couple is not None:
+        capital = me.getValue(capital_couple)
+        capital = capital["CountryName"]+'-'+capital["CapitalName"]
+    return capital
+
 # Funciones utilizadas para comparar elementos dentro de un grafo
 
 def compareJointId(stop, keyvaluestop):
@@ -418,7 +427,11 @@ def findInterconnectionCables(catalog):
     print("El landing-point mas interconectado es ",identifier," con :",greater," conexiones")
     
 
+def dijsktra(graph,source):
+    return dji.Dijkstra(graph,source)
 
+def path(dijsktra,countryB):
+    return dji.pathTo(dijsktra,countryB)
 
     
 # Funciones para hacer calculos 
