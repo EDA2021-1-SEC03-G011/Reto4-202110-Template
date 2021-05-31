@@ -35,6 +35,7 @@ from DISClib.DataStructures import mapentry as me
 from DISClib.Algorithms.Sorting import shellsort as sa
 from DISClib.DataStructures import linkedlistiterator as lli
 from DISClib.Algorithms.Graphs import scc as scc
+from DISClib.Algorithms.Graphs import dfs as dfs
 assert cf
 
 """
@@ -60,9 +61,11 @@ def newCatalog():
                                          directed = False,
                                          size= 15000,
                                          comparefunction=compareJointId)
+    """ Tabla de hash donde la llave es el nombre del landing Point y el valor es su id"""
+    catalog["landing_points_by_name"]=mp.newMap(numelements=1300,maptype='PROBING')
 
 
-    catalog['landing_points_map'] = mp.newMap(numelements=15000,
+    catalog['landing_points_map'] = mp.newMap(numelements=1500,
                                           maptype='PROBING')
     
     catalog['same_landing_point_map']=mp.newMap(numelements=1500,maptype='PROBING')
@@ -88,7 +91,13 @@ def addLandingPoint(catalog, landing_point):
     """
     Agrega a un mapa por llaves landing_point_id y valor la info de ese
     Agrega a un mapa por llaves country y valores listas de landing de este country
+    Agrega a un tabla de hash como llave el nombre de la ciudad del landing point y como valor el id de este
     """
+
+    name=landing_point["name"].split(",")
+    city_name=name[0].lower()
+
+    mp.put(catalog["landing_points_by_name"],city_name,landing_point["landing_point_id"])
     mp.put(catalog['landing_points_map'],landing_point['landing_point_id'],landing_point)
     lt.addLast(catalog["landing_points_name"],landing_point["landing_point_id"])
 
@@ -136,7 +145,7 @@ def addCable(catalog, cable):
     des_couple = mp.get(catalog['landing_points_map'],destination)
     des_coor = me.getValue(des_couple)
 
-    distance = haversine (float(ori_coor['latitude']),float(ori_coor['longitude']),float(des_coor['latitude']),float(des_coor['longitude']))
+    distance = haversine(float(ori_coor['latitude']),float(ori_coor['longitude']),float(des_coor['latitude']),float(des_coor['longitude']))
 
     name_ori = formatVertex(cable['origin'],cable['cable_name'])
     name_des = formatVertex(cable['destination'],cable['cable_name'])
@@ -214,8 +223,14 @@ def addCountryConnections(catalog,country):
             family_couple = mp.get(catalog['same_landing_point_map'],landingpoint)
             family = me.getValue(family_couple)
 
+            
             for cable in lt.iterator(family):
                 addConnection(catalog, cable, country['CountryName']+'-'+country['CapitalName'],distance)
+            newCable=country["CountryName"]+'-'+country["CapitalName"]
+
+            lt.addLast(family,newCable)
+            mp.put(catalog["same_landing_point_map"],landingpoint,family)
+    
     else: 
         minimum = 1000000 
         landind_ward = None
@@ -237,6 +252,10 @@ def addCountryConnections(catalog,country):
         family = me.getValue(family_couple)
         for cable in lt.iterator(family):
             addConnection(catalog, cable, country['CountryName']+'-'+country['CapitalName'],minimum)
+        
+        newCable=country["CountryName"]+'-'+country["CapitalName"]       
+        lt.addLast(family,newCable)
+        mp.put(catalog["same_landing_point_map"],landind_ward,family)
 
 
 # Funciones para creacion de datos
@@ -298,6 +317,19 @@ def firstLandingPoint(catalog):
 def mapSize(map):
     return mp.size(map)
 
+def findLandingPoint(catalog,landingPoint):
+    """
+    Busca en la tabla de hash el id de la ciudad que entra por parametro y lo retorna. Si la ciudad no existe, retorna -1
+    """
+    landingPoint=landingPoint.lower()
+
+    landingCouple=mp.get(catalog["landing_points_by_name"],landingPoint)
+
+    if landingCouple is not None:
+        return me.getValue(landingCouple)
+    else:
+        return -1
+
 # Funciones utilizadas para comparar elementos dentro de un grafo
 
 def compareJointId(stop, keyvaluestop):
@@ -318,6 +350,27 @@ def SCC(graph):
 def areConnected(landing1,landing2,graph):
     kosa = scc.KosarajuSCC(graph)
     return scc.stronglyConnected(kosa,landing1,landing2)
+
+def findInterconnectionCables(catalog):
+
+
+    landingPoints=catalog["landing_points_map"]
+    contador=1
+    for landingPoint in lt.iterator(mp.keySet(landingPoints)):
+        value_couple=mp.get(catalog["landing_points_map"],landingPoint)
+        value=me.getValue(value_couple)
+
+        total_couple=mp.get(catalog["same_landing_point_map"],landingPoint)
+        total=lt.size(me.getValue(total_couple))
+
+        country = value['name'].split(',')
+        country = country[-1].lower().strip()
+        
+        print(contador,".) Landing Point : " ,value["name"], "Pais : ",country, " identificador : ",landingPoint, " Total : ",total)
+        contador+=1
+
+
+    
 # Funciones para hacer calculos 
 
 def haversine(lat1,lon1,lat2,lon2):
@@ -330,4 +383,5 @@ def haversine(lat1,lon1,lat2,lon2):
     d = radius * c
 
     return d
+
 

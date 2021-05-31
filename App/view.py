@@ -75,10 +75,31 @@ while True:
         print("Usuarios de internet : ",lastCountry["Internet users"])
 
     elif int(inputs[0])==3:
-        landing1=input("Escriba el nombre de la primera ciudad ")
-        landing2=input("Escriba el nombre de la segunda ciudad ")
-        print(controller.SCC(catalog['graph']))
-        #print(controller.areConnected(landing1,landing2,catalog['graph']))
+        
+        landing1=input("Escriba el nombre del primer landing point ")
+        landing2=input("Escriba el nombre del segundo landing point ")
+
+        id_landing1=str(controller.findLandingPoint(catalog,landing1))
+        id_landing2=controller.findLandingPoint(catalog,landing2)
+        
+        print(id_landing1,id_landing2)
+        if id_landing1!=-1 and id_landing2!=-1:
+
+            
+            conectados=controller.areConnected(id_landing1,id_landing2,catalog['graph'])
+            print(conectados)
+            """
+            if conectados:
+                print("Los dos landing points estan conectados")
+            else:
+                print("Los 2 landing points no estan conectados")
+            """
+        else:
+            print("No hay ningun landing point con el nombre que acaba de especificar")
+        print("Cantidad de componentes conectados: ",controller.SCC(catalog['graph']))
+        
+    elif int(inputs[0])==4:
+        controller.findInterconnectionCables(catalog)
         
     else:
         sys.exit(0)

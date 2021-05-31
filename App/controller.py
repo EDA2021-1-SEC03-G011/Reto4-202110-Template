@@ -51,12 +51,7 @@ def loadData(catalog,connections,landing_points,countries):
     lastcable = None
 
     for cable in input_file_cable:
-        if lastcable is not None:
-            samecable = cable['origin'] == lastcable['destination'] and cable["destination"]==lastcable["origin"] and cable["cable_id"]==lastcable["cable_id"] 
-            if not samecable:
-                model.addCable(catalog, cable)
-                
-        lastcable = cable
+        model.addCable(catalog, cable)
         model.addMarineCable(catalog,cable)
 
     model.addLandingConnection(catalog)
@@ -97,3 +92,9 @@ def firstLandingPoint(catalog):
 
 def mapSize(map):
     return model.mapSize(map)
+
+def findLandingPoint(catalog,landingpoint):
+    return model.findLandingPoint(catalog,landingpoint)
+
+def findInterconnectionCables(catalog):
+    return model.findInterconnectionCables(catalog)
