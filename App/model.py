@@ -80,7 +80,12 @@ def newCatalog():
     catalog["countries_name"]=lt.newList("ARRAY_LIST")
 
     catalog["landing_points_name"]=lt.newList("ARRAY_LIST")
+
+    catalog['landing_cable_map'] = mp.newMap(numelements=2500,
+                                          maptype='PROBING')
     
+    catalog['test'] = mp.newMap(numelements=1000,
+                                          maptype='PROBING')
     return catalog
 
 
@@ -150,6 +155,9 @@ def addCable(catalog, cable):
     name_ori = formatVertex(cable['origin'],cable['cable_name'])
     name_des = formatVertex(cable['destination'],cable['cable_name'])
 
+    mp.put(catalog['landing_cable_map'],name_ori,cable) 
+    mp.put(catalog['landing_cable_map'],name_ori,cable) 
+
     addJoint(catalog,name_ori)
     addJoint(catalog,name_des)
 
@@ -189,7 +197,11 @@ def addCountryPoint(catalog, country):
     """
     if country['CountryName'] != "":
         countryname = country['CountryName']+'-'+country['CapitalName']
+        country['name'] = countryname
+        country['id'] = countryname
+        mp.put(catalog['landing_cable_map'],countryname,country)
         addJoint(catalog, countryname)
+        
 
 def addCountry(catalog,country):
     """
@@ -212,6 +224,8 @@ def addCountryConnections(catalog,country):
         countries_list = me.getValue(countries_couple)
 
         for landingpoint in lt.iterator(countries_list):
+            country_format=country["CountryName"]+'-'+country["CapitalName"]
+
             info_couple = mp.get(catalog['landing_points_map'],landingpoint)
             info = me.getValue(info_couple)
 
@@ -223,14 +237,30 @@ def addCountryConnections(catalog,country):
             family_couple = mp.get(catalog['same_landing_point_map'],landingpoint)
             family = me.getValue(family_couple)
 
-            
-            for cable in lt.iterator(family):
-                addConnection(catalog, cable, country['CountryName']+'-'+country['CapitalName'],distance)
-            newCable=country["CountryName"]+'-'+country["CapitalName"]
 
-            lt.addLast(family,newCable)
+            for cable in lt.iterator(family):
+                addConnection(catalog, cable, country_format,distance)
+                couple_cable = mp.get(catalog['landing_cable_map'],cable)
+                info_cable = me.getValue(couple_cable)
+                info_cable["CountryName"] = country["CountryName"]
+                info_cable["id"] = country_format
+                mp.put(catalog['landing_cable_map'],cable,info_cable)
+                exists_country = mp.get(catalog['same_landing_point_map'],country_format)
+
+                """
+                if exists_country is not None:
+                    cables_list = me.getValue(exists_country)
+                    lt.addLast(cables_list,cable)
+                
+                else:
+                    cables_list = lt.newList(datastructure='SINGLE_LINKED')
+                    lt.addLast(cables_list,cable)
+                
+                mp.put(catalog['same_landing_point_map'],country_format,cables_list)
+
+            lt.addLast(family,country_format)
             mp.put(catalog["same_landing_point_map"],landingpoint,family)
-    
+    """    
     else: 
         minimum = 1000000 
         landind_ward = None
@@ -352,8 +382,7 @@ def areConnected(landing1,landing2,graph):
     return scc.stronglyConnected(kosa,landing1,landing2)
 
 def findInterconnectionCables(catalog):
-
-
+    """
     landingPoints=catalog["landing_points_map"]
     contador=1
     for landingPoint in lt.iterator(mp.keySet(landingPoints)):
@@ -368,6 +397,27 @@ def findInterconnectionCables(catalog):
         
         print(contador,".) Landing Point : " ,value["name"], "Pais : ",country, " identificador : ",landingPoint, " Total : ",total)
         contador+=1
+    """
+    vertexs = gr.vertices(catalog['graph'])
+    greater = 0
+    identifier = None
+    counter = 1
+    for vertex in lt.iterator(vertexs):
+        degree = gr.degree(catalog['graph'],vertex)
+        couple = mp.get(catalog['landing_cable_map'],vertex)
+        info = me.getValue(couple)
+        if degree > greater:
+            greater = degree
+            identifier = vertex
+
+        if "CountryName" in info:
+            print(counter, vertex,info["CountryName"],vertex)
+        else:
+            print(counter,info['name'],info['CountryName'],info['id'])
+        counter += 1
+    print("El landing-point mas interconectado es ",identifier," con :",greater," conexiones")
+    
+
 
 
     
@@ -385,3 +435,5 @@ def haversine(lat1,lon1,lat2,lon2):
     return d
 
 
+def cableTest(catalog,cable):
+    mp.put(catalog['test'],cable['cable_name'],0)

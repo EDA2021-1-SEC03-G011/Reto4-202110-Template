@@ -53,6 +53,7 @@ def loadData(catalog,connections,landing_points,countries):
     for cable in input_file_cable:
         model.addCable(catalog, cable)
         model.addMarineCable(catalog,cable)
+        model.cableTest(catalog,cable)
 
     model.addLandingConnection(catalog)
 
@@ -64,6 +65,7 @@ def loadData(catalog,connections,landing_points,countries):
             model.addCountryPoint(catalog, country)
             model.addCountry(catalog,country)
             model.addCountryConnections(catalog,country)
+            
            
 
 # Funciones de cracks

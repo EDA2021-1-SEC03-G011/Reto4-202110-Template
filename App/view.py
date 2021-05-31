@@ -24,6 +24,7 @@ import config as cf
 import sys
 import controller
 from DISClib.ADT import list as lt
+from DISClib.ADT import map as mp
 assert cf
 
 sys.setrecursionlimit(1000000000)
@@ -86,14 +87,13 @@ while True:
         if id_landing1!=-1 and id_landing2!=-1:
 
             
-            conectados=controller.areConnected(id_landing1,id_landing2,catalog['graph'])
-            print(conectados)
-            """
+            conectados=controller.areConnected(id_landing1,id_landing2,catalog['marine_graph'])
+            
             if conectados:
                 print("Los dos landing points estan conectados")
             else:
-                print("Los 2 landing points no estan conectados")
-            """
+                print("Los dos landing points no estan conectados")
+            
         else:
             print("No hay ningun landing point con el nombre que acaba de especificar")
         print("Cantidad de componentes conectados: ",controller.SCC(catalog['graph']))
