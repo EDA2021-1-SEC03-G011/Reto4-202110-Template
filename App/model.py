@@ -37,6 +37,8 @@ from DISClib.DataStructures import linkedlistiterator as lli
 from DISClib.Algorithms.Graphs import scc as scc
 from DISClib.Algorithms.Graphs import dfs as dfs
 from DISClib.Algorithms.Graphs import dijsktra as dji
+from DISClib.Algorithms.Graphs import prim as prim
+from DISClib.DataStructures import edge as edg
 assert cf
 
 """
@@ -432,6 +434,12 @@ def dijsktra(graph,source):
 
 def path(dijsktra,countryB):
     return dji.pathTo(dijsktra,countryB)
+
+def mst(graph):
+    return prim.PrimMST(graph)
+
+def weight(graph,mst):
+    return prim.weightMST(graph,mst)
 
     
 # Funciones para hacer calculos 

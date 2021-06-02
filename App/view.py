@@ -48,6 +48,10 @@ def printMenu():
     print("1- Inicializar el catalogo")
     print("2- Cargar información en el catálogo")
     print("3- Requerimiento 1")
+    print("4- Requerimiento 2")
+    print("5- Requerimiento 3")
+    print("6- Requerimiento 4")
+
 
 catalog = None
 
@@ -118,6 +122,13 @@ while True:
 
         else:
             print("Bueno panita, pls, escribe bien, o a lo mejor ese pais no existe")
+
+    elif int(inputs[0])==6:
+        mst = controller.mst(catalog['graph'])
+        weight = controller.weight(catalog['graph'],mst)
+        print("La cantidad de nodos de la red de expansion minima es: " ,mp.size(mst['marked']))
+        print("La distancia total de la red de expansion minima es de: ",weight,"km")
+
     else:
         sys.exit(0)
 sys.exit(0)

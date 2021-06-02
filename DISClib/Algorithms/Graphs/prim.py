@@ -58,7 +58,7 @@ def PrimMST(graph):
     except Exception as exp:
         error.reraise(exp, 'prim:PrimMST')
 
-
+#auxiliar
 def prim(graph, search, v):
     """
     Args:
@@ -79,7 +79,7 @@ def prim(graph, search, v):
     except Exception as exp:
         error.reraise(exp, 'prim:prim')
 
-
+#auxiliar
 def scan(graph, search, vertex):
     """
     Args:

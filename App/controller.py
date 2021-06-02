@@ -82,6 +82,12 @@ def dijsktra(graph,source):
 def path(dijsktra,countryB):
     return model.path(dijsktra,countryB)
 
+def mst(graph):
+    return model.mst(graph)
+
+def weight(graph,mst):
+    return model.weight(graph,mst)
+
 # Funciones de consulta sobre el catálogo
 
 def graphSize(graph):
