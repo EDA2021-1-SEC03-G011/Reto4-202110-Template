@@ -104,6 +104,8 @@ def addLandingPoint(catalog, landing_point):
 
     name=landing_point["name"].split(",")
     city_name=name[0].lower()
+    country = name[-1].title()
+    landing_point['Country'] = country
 
     mp.put(catalog["landing_points_by_name"],city_name,landing_point["landing_point_id"])
     mp.put(catalog['landing_points_map'],landing_point['landing_point_id'],landing_point)
@@ -371,6 +373,40 @@ def getCapital(country,catalog):
         capital = capital["CountryName"]+'-'+capital["CapitalName"]
     return capital
 
+def landingCables(catalog,id_landing):
+    landing_map = catalog['same_landing_point_map']
+    couple = mp.get(landing_map,id_landing)
+    return me.getValue(couple)
+
+def afected(catalog,cables_list):
+    #countries = mp.newMap(numelements=100,maptype='PROBING')
+    countries_list = lt.newList(datastructure='ARRAY_LIST',cmpfunction=compareCountries)
+    for cable in lt.iterator(cables_list):
+        adjacents = gr.adjacents(catalog['graph'],cable)
+        for adj_vertex in lt.iterator(adjacents):
+            landing = adj_vertex.split('-')[0]
+            couple = mp.get(catalog['landing_points_map'],landing)
+            if couple is not None:
+                value = me.getValue(couple)
+                country = value['name'].split(',')[-1].title().strip()
+                latitude = value['latitude']
+                longitude = value['longitude']
+
+                countries = mp.get(catalog['countries'],country)['value']
+                latitude_c = countries['CapitalLatitude']
+                longitude_c = countries['CapitalLongitude']
+                distance = haversine(float(latitude),float(longitude),float(latitude_c),float(longitude_c))
+                countries['distance'] =  distance
+
+                if not lt.isPresent(countries_list,countries):
+                    lt.addLast(countries_list,countries)
+
+                #mp.put(countries,country,0)
+    sa.sort(countries_list,compareDistance)
+    return countries_list
+
+
+
 # Funciones utilizadas para comparar elementos dentro de un grafo
 
 def compareJointId(stop, keyvaluestop):
@@ -381,7 +417,15 @@ def compareJointId(stop, keyvaluestop):
         return 1
     else:
         return -1
+        
+# Funciones utilizadas para comparar elementos dentro de una lista
 
+def compareDistance(country1,country2):
+    return (float(country1['distance'])>float(country2['distance']))
+
+def compareCountries(country1,country2):
+    if (float(country1['distance']) == float(country2['distance'])):
+        return 0
 # Funciones de cracks
 
 def SCC(graph):

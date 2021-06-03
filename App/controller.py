@@ -115,3 +115,9 @@ def findInterconnectionCables(catalog):
 
 def getCapital(country,catalog):
     return model.getCapital(country,catalog)
+
+def landingCables(catalog,id_landing):
+    return model.landingCables(catalog,id_landing)
+
+def afected(catalog,cables_list):
+    return model.afected(catalog,cables_list)

@@ -51,6 +51,7 @@ def printMenu():
     print("4- Requerimiento 2")
     print("5- Requerimiento 3")
     print("6- Requerimiento 4")
+    print("7- Requerimiento 5")
 
 
 catalog = None
@@ -128,6 +129,22 @@ while True:
         weight = controller.weight(catalog['graph'],mst)
         print("La cantidad de nodos de la red de expansion minima es: " ,mp.size(mst['marked']))
         print("La distancia total de la red de expansion minima es de: ",weight,"km")
+
+    elif int(inputs[0])==7:
+        landing=input("Escriba el nombre del landing point: ")
+        id_landing=str(controller.findLandingPoint(catalog,landing))
+        if id_landing != -1:
+            cables_list = controller.landingCables(catalog,id_landing)
+            afected = controller.afected(catalog,cables_list)
+            print("La cantidad de paises afectados es: ",lt.size(afected))
+            print("La lista de paises afectados es la siguiente: ")
+            for country in lt.iterator(afected):
+                print(country['CountryName'],"->",country['distance'])
+        else:
+            print("Hermanit@, tal vez ese nombre no sea el correcto")
+    
+    elif int(inputs[0])==8:
+        pass
 
     else:
         sys.exit(0)
