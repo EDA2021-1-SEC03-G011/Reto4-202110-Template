@@ -144,7 +144,17 @@ while True:
             print("Hermanit@, tal vez ese nombre no sea el correcto")
     
     elif int(inputs[0])==8:
-        pass
+        country = input("Escriba el nombre del pais: ").title()
+        cable_name = input("Escriba el nombre del cable: ")
+        landing_list = controller.getCableName(catalog,cable_name)
+        if landing_list != -1:
+            wideband = controller.wideOfBand(catalog,landing_list,country)
+            keys = mp.keySet(wideband)
+            for con in lt.iterator(keys):
+                value = mp.get(wideband,con)['value']
+                print(con," - Se puede garantizar un ancho de banda de: ",round(value,3)," Mbps")
+        else: 
+            print("Mano, ese nombre de cable no existe")
 
     else:
         sys.exit(0)

@@ -87,7 +87,7 @@ def newCatalog():
     catalog['landing_cable_map'] = mp.newMap(numelements=2500,
                                           maptype='PROBING')
     
-    catalog['test'] = mp.newMap(numelements=1000,
+    catalog['cable_name_map'] = mp.newMap(numelements=5000,
                                           maptype='PROBING')
     return catalog
 
@@ -292,6 +292,15 @@ def addCountryConnections(catalog,country):
         lt.addLast(family,newCable)
         mp.put(catalog["same_landing_point_map"],landind_ward,family)
 
+def addCableName(catalog,cable):
+    exists = mp.get(catalog['cable_name_map'],cable['cable_name'])
+    if exists is not None:
+        list = me.getValue(exists)
+    else:
+        list = lt.newList(datastructure='ARRAY_LIST')
+    lt.addLast(list,cable)
+    mp.put(catalog['cable_name_map'],cable['cable_name'],list)
+
 
 # Funciones para creacion de datos
 
@@ -405,6 +414,14 @@ def afected(catalog,cables_list):
     sa.sort(countries_list,compareDistance)
     return countries_list
 
+def getCableName(catalog,cable_name):
+
+    exists = mp.get(catalog['cable_name_map'],cable_name)
+    if exists is not None:
+        return me.getValue(exists)
+    else:
+        return -1
+
 
 
 # Funciones utilizadas para comparar elementos dentro de un grafo
@@ -499,6 +516,17 @@ def haversine(lat1,lon1,lat2,lon2):
 
     return d
 
+#Funciones para los filtros
 
-def cableTest(catalog,cable):
-    mp.put(catalog['test'],cable['cable_name'],0)
+def wideOfBand(catalog,landing_list,country):
+    countries = mp.newMap(maptype='PROBING')
+    for cable in lt.iterator(landing_list):
+        origin = cable['origin']
+        country_origin = mp.get(catalog['landing_points_map'],origin)['value']['Country'].strip()
+        users = mp.get(catalog['countries'],country_origin)['value']['Internet users']
+        wide = cable['capacityTBPS']
+        calculation = (float(wide)/float(users))*1000000
+        if country_origin != country:
+            mp.put(countries,country_origin,calculation)
+    return countries
+

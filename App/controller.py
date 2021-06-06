@@ -53,9 +53,9 @@ def loadData(catalog,connections,landing_points,countries):
     for cable in input_file_cable:
         model.addCable(catalog, cable)
         model.addMarineCable(catalog,cable)
-        model.cableTest(catalog,cable)
+        model.addCableName(catalog,cable)
 
-    model.addLandingConnection(catalog)
+    #model.addLandingConnection(catalog)
 
     countries = cf.data_dir + countries
     input_file_countries = csv.DictReader(open(countries, encoding='utf-8-sig'))
@@ -66,6 +66,7 @@ def loadData(catalog,connections,landing_points,countries):
             model.addCountry(catalog,country)
             model.addCountryConnections(catalog,country)
             
+    model.addLandingConnection(catalog)
            
 
 # Funciones de cracks
@@ -121,3 +122,11 @@ def landingCables(catalog,id_landing):
 
 def afected(catalog,cables_list):
     return model.afected(catalog,cables_list)
+
+def getCableName(catalog,cable_name):
+    return model.getCableName(catalog,cable_name)
+
+#Funciones para que Juan Sebastian salga de nuestro pensamiento
+
+def wideOfBand(catalog,landing_list,country):
+    return model.wideOfBand(catalog,landing_list,country)
