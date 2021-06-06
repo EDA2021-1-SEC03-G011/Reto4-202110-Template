@@ -39,6 +39,7 @@ from DISClib.Algorithms.Graphs import dfs as dfs
 from DISClib.Algorithms.Graphs import dijsktra as dji
 from DISClib.Algorithms.Graphs import prim as prim
 from DISClib.DataStructures import edge as edg
+import ipapi
 assert cf
 
 """
@@ -64,6 +65,12 @@ def newCatalog():
                                          directed = False,
                                          size= 15000,
                                          comparefunction=compareJointId)
+    "Grafo igual al principal, pero los pesos siempre son 1"
+    catalog["second_graph"]=gr.newGraph(datastructure='ADJ_LIST',
+                                         directed = False,
+                                         size= 15000,
+                                         comparefunction=compareJointId)
+
     """ Tabla de hash donde la llave es el nombre del landing Point y el valor es su id"""
     catalog["landing_points_by_name"]=mp.newMap(numelements=1300,maptype='PROBING')
 
@@ -163,10 +170,12 @@ def addCable(catalog, cable):
     mp.put(catalog['landing_cable_map'],name_ori,cable) 
     mp.put(catalog['landing_cable_map'],name_ori,cable) 
 
-    addJoint(catalog,name_ori)
-    addJoint(catalog,name_des)
+    addJoint(catalog["graph"],name_ori)
+    addJoint(catalog["graph"],name_des)
+    addJoint(catalog["second_graph"],name_ori)
+    addJoint(catalog["second_graph"],name_des)
 
-    addConnection(catalog, name_ori, name_des, distance)
+    addConnection(catalog["graph"], name_ori, name_des, distance)
     
     addLandingFamily(catalog,cable['origin'],name_ori) 
     addLandingFamily(catalog,cable['destination'],name_des) 
@@ -187,14 +196,14 @@ def addLandingConnection(catalog):
             if previous_cable!=None:
                 origin= cable
                 destination= previous_cable
-                addConnection(catalog,origin,destination,0.1)
+                addConnection(catalog["graph"],origin,destination,0.1)
                 
             previous_cable=cable
         #Cerrar el ciclo al unir el primero con el ultimo
         cable = lt.firstElement(cable_names)
         origin=cable
         destination=previous_cable
-        addConnection(catalog,origin,destination,0.1)
+        addConnection(catalog["graph"],origin,destination,0.1)
 
 def addCountryPoint(catalog, country):
     """
@@ -205,7 +214,7 @@ def addCountryPoint(catalog, country):
         country['name'] = countryname
         country['id'] = countryname
         mp.put(catalog['landing_cable_map'],countryname,country)
-        addJoint(catalog, countryname)
+        addJoint(catalog["graph"], countryname)
         
 
 def addCountry(catalog,country):
@@ -244,7 +253,7 @@ def addCountryConnections(catalog,country):
 
 
             for cable in lt.iterator(family):
-                addConnection(catalog, cable, country_format,distance)
+                addConnection(catalog["graph"], cable, country_format,distance)
                 couple_cable = mp.get(catalog['landing_cable_map'],cable)
                 info_cable = me.getValue(couple_cable)
                 info_cable["CountryName"] = country["CountryName"]
@@ -286,7 +295,7 @@ def addCountryConnections(catalog,country):
         family_couple = mp.get(catalog['same_landing_point_map'],landind_ward)
         family = me.getValue(family_couple)
         for cable in lt.iterator(family):
-            addConnection(catalog, cable, country['CountryName']+'-'+country['CapitalName'],minimum)
+            addConnection(catalog["graph"], cable, country['CountryName']+'-'+country['CapitalName'],minimum)
         
         newCable=country["CountryName"]+'-'+country["CapitalName"]       
         lt.addLast(family,newCable)
@@ -301,6 +310,17 @@ def addCableName(catalog,cable):
     lt.addLast(list,cable)
     mp.put(catalog['cable_name_map'],cable['cable_name'],list)
 
+def secondGraph(catalog):
+    listVertex=gr.vertices(catalog["graph"])
+    for vertex in lt.iterator(listVertex):
+        if not gr.containsVertex(catalog["second_graph"],vertex):
+            gr.insertVertex(catalog["second_graph"],vertex)
+        adjacents=gr.adjacents(catalog["graph"],vertex)
+        for adjacent in lt.iterator(adjacents):
+            if not gr.containsVertex(catalog["second_graph"],adjacent):
+                gr.insertVertex(catalog["second_graph"],adjacent)
+            gr.addEdge(catalog["second_graph"],vertex,adjacent,1)
+
 
 # Funciones para creacion de datos
 
@@ -308,18 +328,18 @@ def formatVertex(origin, name):
     format = origin + '-' + name
     return format
 
-def addJoint(catalog, vertex):
-    if not gr.containsVertex(catalog['graph'],vertex):
-        gr.insertVertex(catalog['graph'],vertex)
+def addJoint(graph, vertex):
+    if not gr.containsVertex(graph,vertex):
+        gr.insertVertex(graph,vertex)
 
 def addMarine(catalog, vertex):
     if not gr.containsVertex(catalog['marine_graph'],vertex):
         gr.insertVertex(catalog['marine_graph'],vertex)
 
-def addConnection(catalog, origin, destination, distance):
-    edge = gr.getEdge(catalog['graph'],origin,destination)
+def addConnection(graph, origin, destination, distance):
+    edge = gr.getEdge(graph,origin,destination)
     if edge is None:
-        gr.addEdge(catalog['graph'],origin, destination,distance)
+        gr.addEdge(graph,origin, destination,distance)
 
 def addLandingFamily(catalog,landing_point,format_name):
 
@@ -529,4 +549,53 @@ def wideOfBand(catalog,landing_list,country):
         if country_origin != country:
             mp.put(countries,country_origin,calculation)
     return countries
+
+def tupapi(catalog,ip1,ip2):
+    if ip1=="8.8.8.8":
+        latitude1=37.417661109182816
+        longitude1= -122.08286045229197
+        latitude2=float(ipapi.location(ip2)["latitude"])
+        longitude2=float(ipapi.location(ip2)["longitude"])
+        
+    if ip2=="8.8.8.8":
+        latitude1=float(ipapi.location(ip1)["latitude"])
+        longitude1=float(ipapi.location(ip1)["longitude"])
+        latitude2=37.417661109182816
+        longitude2= -122.08286045229197
+    
+    x=mp.valueSet(catalog["landing_points_map"])
+    min1=100000000000000
+    landing1=""
+
+    min2=100000000000000
+    landing2=""
+    for landing in lt.iterator(x):
+        localLatitude=float(landing["latitude"])
+        localLongitude=float(landing["longitude"])
+
+        distance1=haversine(latitude1,longitude1,localLatitude,localLongitude)
+        distance2=haversine(latitude2,longitude2,localLatitude,localLongitude)
+
+        if distance1<min1:
+            min1=distance1
+            landing1=landing["landing_point_id"]
+        if distance2<min2:
+            min2=distance2
+            landing2=landing["landing_point_id"]
+
+    
+    list_landingPoint1=mp.get(catalog["same_landing_point_map"],landing1)["value"]
+    list_landingPoint2=mp.get(catalog["same_landing_point_map"],landing2)["value"]
+
+    landingPoint1=lt.firstElement(list_landingPoint1)
+    landingPoint2=lt.firstElement(list_landingPoint2)
+
+    dikstra=dji.Dijkstra(catalog["second_graph"],landingPoint1)
+    path=dji.pathTo(dikstra,landingPoint2)
+    return path
+    
+
+
+
+    
 

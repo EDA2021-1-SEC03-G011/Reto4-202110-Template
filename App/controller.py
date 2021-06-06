@@ -67,6 +67,7 @@ def loadData(catalog,connections,landing_points,countries):
             model.addCountryConnections(catalog,country)
             
     model.addLandingConnection(catalog)
+    model.secondGraph(catalog)
            
 
 # Funciones de cracks
@@ -130,3 +131,6 @@ def getCableName(catalog,cable_name):
 
 def wideOfBand(catalog,landing_list,country):
     return model.wideOfBand(catalog,landing_list,country)
+
+def tupapi(catalog,ip1,ip2):
+    return model.tupapi(catalog,ip1,ip2)

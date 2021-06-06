@@ -52,6 +52,9 @@ def printMenu():
     print("5- Requerimiento 3")
     print("6- Requerimiento 4")
     print("7- Requerimiento 5")
+    print("8- Requerimiento 6")
+    print("9- Requerimiento 7")
+    print("10- Requerimiento 8")
 
 
 catalog = None
@@ -156,6 +159,15 @@ while True:
         else: 
             print("Mano, ese nombre de cable no existe")
 
+    elif int(inputs[0])==9:
+        ip1=input("Ingresa la primera dirección ip, papi: ")
+        ip2=input("Ingresa la segunda dirección ip, papi/mami: ")
+        path=controller.tupapi(catalog,ip1,ip2)
+        counter=0
+        for route in lt.iterator(path):
+            print(route['vertexA'],"->",route['vertexB']," : ",route['weight'])
+            counter+=1
+        print("La cantidad de saltos que se deben realizar son : ",counter)
     else:
         sys.exit(0)
 sys.exit(0)
