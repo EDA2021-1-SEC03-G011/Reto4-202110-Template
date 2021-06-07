@@ -62,6 +62,7 @@ catalog = None
 """
 Menu principal
 """
+print("probandoXD")
 while True:
     printMenu()
     inputs = input('Seleccione una opción para continuar\n')
