@@ -139,3 +139,9 @@ def tupapi(catalog,ip1,ip2):
 
 def bonoReq1(catalog,id_landing1, id_landing2):
     model.bonoReq1(catalog,id_landing1, id_landing2)
+
+def bonoReq3(catalog,path):
+    model.bonoReq3(catalog,path)
+
+def bonoReq5(catalog,afected,id_landing):
+    model.bonoReq5(catalog,afected,id_landing)

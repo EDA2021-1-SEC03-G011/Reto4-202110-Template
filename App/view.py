@@ -227,6 +227,7 @@ while True:
             for route in lt.iterator(path):
                 print(route['vertexA'],"->",route['vertexB']," : ",route['weight'])
             print("Distancia total: ",dji.distTo(dijsktra,countryB))
+            controller.bonoReq3(catalog,path)
             print("\nTiempo gastado: ", delta_time," ms")
             print("Memoria utilizada: ", delta_memory, " kb")
 
@@ -278,6 +279,7 @@ while True:
                 print(country['CountryName'],"->",country['distance'])
             print("\nTiempo gastado: ", delta_time," ms")
             print("Memoria utilizada: ", delta_memory, " kb")
+            controller.bonoReq5(catalog,afected,id_landing)
         else:
             print("Hermanit@, tal vez ese nombre no sea el correcto")
     

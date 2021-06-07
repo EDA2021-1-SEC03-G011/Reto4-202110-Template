@@ -478,22 +478,7 @@ def areConnected(landing1,landing2,graph):
     return scc.stronglyConnected(kosa,landing1,landing2)
 
 def findInterconnectionCables(catalog):
-    """
-    landingPoints=catalog["landing_points_map"]
-    contador=1
-    for landingPoint in lt.iterator(mp.keySet(landingPoints)):
-        value_couple=mp.get(catalog["landing_points_map"],landingPoint)
-        value=me.getValue(value_couple)
 
-        total_couple=mp.get(catalog["same_landing_point_map"],landingPoint)
-        total=lt.size(me.getValue(total_couple))
-
-        country = value['name'].split(',')
-        country = country[-1].lower().strip()
-        
-        print(contador,".) Landing Point : " ,value["name"], "Pais : ",country, " identificador : ",landingPoint, " Total : ",total)
-        contador+=1
-    """
     vertexs = gr.vertices(catalog['graph'])
     greater = 0
     identifier = None
@@ -512,6 +497,7 @@ def findInterconnectionCables(catalog):
             print(counter,info['name'],info['CountryName'],info['id'])
         counter += 1
     print("El landing-point mas interconectado es ",identifier," con :",greater," conexiones")
+    bonoReq2(catalog,identifier)
     
 
 def dijsktra(graph,source):
@@ -613,7 +599,62 @@ def bonoReq1(catalog,id_landing1, id_landing2):
         folium.Marker([latitude, longitude], popup=name).add_to(map)
     folium.Marker(location=[land1['latitude'],land1['longitude']],popup=land1['name'],icon=folium.Icon(color="red"),).add_to(map)
     folium.Marker(location=[land2['latitude'], land2['longitude']],popup=land2['name'],icon=folium.Icon(color="red"),).add_to(map)
-    map.save("index.html")
+    map.save("bono1.html")
+
+def bonoReq2(catalog,identifier):
+    map = folium.Map(location=[0,0],zoom_start=2)
+    country = identifier.split('-')[0]
+    info = mp.get(catalog['countries'],country)['value']
+    latitude = info['CapitalLatitude']
+    longitude = info['CapitalLongitude']
+    folium.Marker([latitude, longitude],popup = identifier).add_to(map)
+    map.save("bono2.html")
+
+def bonoReq3(catalog,path):
+    map = folium.Map(location=[0,0],zoom_start=2)
+    camineishon = []
+    for route in lt.iterator(path):
+        vera = route['vertexA'].split('-')[0]
+        verb = route['vertexB'].split('-')[0]
+        
+        if mp.contains(catalog['landing_points_map'],vera):
+            info = mp.get(catalog['landing_points_map'],vera)['value']
+            tupl = (float(info['latitude']),float(info['longitude']))
+            folium.Marker(tupl, popup=vera).add_to(map)
+            camineishon.append(tupl)
+        else:
+            info = mp.get(catalog['countries'],vera)['value']
+            tupl = (float(info['CapitalLatitude']),float(info['CapitalLongitude']))
+            folium.Marker(tupl, popup=vera).add_to(map)
+            camineishon.append(tupl)
+        
+        if mp.contains(catalog['landing_points_map'],verb):
+            info2 = mp.get(catalog['landing_points_map'],verb)['value']
+            tupl2 = (float(info2['latitude']),float(info2['longitude']))
+            folium.Marker(tupl2, popup=verb).add_to(map)
+            camineishon.append(tupl2)
+        else:
+            info2 = mp.get(catalog['countries'],verb)['value']
+            tupl2 = (float(info2['CapitalLatitude']),float(info2['CapitalLongitude']))
+            folium.Marker(tupl2, popup=verb).add_to(map)
+            camineishon.append(tupl2)
+    
+
+    folium.PolyLine(camineishon).add_to(map)
+    map.save("bono3.html")
+
+def bonoReq5(catalog,afected,id_landing):
+    map = folium.Map(location=[0,0],zoom_start=2)
+    for country in lt.iterator(afected):
+        latitude = country['CapitalLatitude']
+        longitude = country['CapitalLongitude']
+        name = country['CountryName']
+        folium.Marker((latitude,longitude), popup=name,icon=folium.Icon(color="red")).add_to(map)
+    land = mp.get(catalog['landing_points_map'],id_landing)['value']
+    folium.Marker((land['latitude'],land['longitude']), popup=land["name"],icon=folium.Icon(color="pink")).add_to(map)
+    map.save("bono4.html")
+
+    
 
 
 
