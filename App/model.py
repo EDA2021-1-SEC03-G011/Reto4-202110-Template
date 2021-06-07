@@ -25,7 +25,10 @@
  """
 
 
+from DISClib.DataStructures.chaininghashtable import valueSet
 from os import name
+
+from branca.element import Html
 import config as cf
 import math
 from DISClib.ADT import list as lt
@@ -40,6 +43,7 @@ from DISClib.Algorithms.Graphs import dijsktra as dji
 from DISClib.Algorithms.Graphs import prim as prim
 from DISClib.DataStructures import edge as edg
 import ipapi
+import folium
 assert cf
 
 """
@@ -467,7 +471,7 @@ def compareCountries(country1,country2):
 
 def SCC(graph):
     kosa = scc.KosarajuSCC(graph)
-    return scc.connectedComponents(kosa)
+    return scc.connectedComponents(kosa),kosa
 
 def areConnected(landing1,landing2,graph):
     kosa = scc.KosarajuSCC(graph)
@@ -594,6 +598,22 @@ def tupapi(catalog,ip1,ip2):
     path=dji.pathTo(dikstra,landingPoint2)
     return path
     
+# Funciones para graficar a lo chupapi muñaño †
+
+
+def bonoReq1(catalog,id_landing1, id_landing2):
+    map = folium.Map(location=[0,0],zoom_start=2)
+    value_set = mp.valueSet(catalog['landing_points_map'])
+    land1 = mp.get(catalog['landing_points_map'],id_landing1)['value']
+    land2 = mp.get(catalog['landing_points_map'],id_landing2)['value']
+    for landing_info in lt.iterator(value_set):
+        latitude = landing_info['latitude']
+        longitude = landing_info['longitude']
+        name = landing_info['name']
+        folium.Marker([latitude, longitude], popup=name).add_to(map)
+    folium.Marker(location=[land1['latitude'],land1['longitude']],popup=land1['name'],icon=folium.Icon(color="red"),).add_to(map)
+    folium.Marker(location=[land2['latitude'], land2['longitude']],popup=land2['name'],icon=folium.Icon(color="red"),).add_to(map)
+    map.save("index.html")
 
 
 

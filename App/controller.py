@@ -134,3 +134,8 @@ def wideOfBand(catalog,landing_list,country):
 
 def tupapi(catalog,ip1,ip2):
     return model.tupapi(catalog,ip1,ip2)
+
+#Funciones para bonos
+
+def bonoReq1(catalog,id_landing1, id_landing2):
+    model.bonoReq1(catalog,id_landing1, id_landing2)
